@@ -671,7 +671,7 @@ We can try out the web service using the Swagger UI at [http://localhost:8080/ui
 Or by running a ``curl`` command like
 
 ```{.awk #test-webservice}
-curl -X POST "http://localhost:8080/api/newtonraphson" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"epsilon\":0.001,\"guess\":-20}"
+curl -X POST "http://localhost:8080/api/newtonraphson" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"niter\":500000000}"
 ```
 
 ## JavaScript
