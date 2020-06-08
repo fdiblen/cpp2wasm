@@ -83,6 +83,7 @@ jobs:
         run: |
           http --ignore-stdin -hf localhost:5000 niter=500000000 | tee response.txt
           # Parse result url from response
+          cat response.txt
           RESULT_URL=$(cat response.txt |grep Location |awk '{print $2}')
           sleep 2
           http --ignore-stdin $RESULT_URL
