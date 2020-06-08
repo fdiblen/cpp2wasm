@@ -74,7 +74,7 @@ run-webservice: src/py/calculatepipy.*.so
 	python src/py/webservice.py
 
 test-webservice:
-	curl -X POST "http://localhost:8080/api/newtonraphson" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"niter\":500000000}"
+	curl -X POST "http://localhost:8080/api/calculatepi" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"niter\":500000000}"
 
 run-celery-worker: src/py/calculatepipy.*.so
 	PYTHONPATH=src/py celery worker -A tasks

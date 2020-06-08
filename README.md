@@ -270,7 +270,7 @@ And in another shell call CGI script using curl
 curl --header "Content-Type: application/json" \
   --request POST \
   --data '{"niter":500000000}' \
-  http://localhost:8080/cgi-bin/newtonraphson
+  http://localhost:8080/cgi-bin/calculatepi
 ```
 
 Should return the following JSON document as a response
@@ -670,7 +670,7 @@ We can try out the web service using the Swagger UI at [http://localhost:8080/ui
 Or by running a ``curl`` command like
 
 ```{.awk #test-webservice}
-curl -X POST "http://localhost:8080/api/newtonraphson" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"niter\":500000000}"
+curl -X POST "http://localhost:8080/api/calculatepi" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"niter\":500000000}"
 ```
 
 ## JavaScript
@@ -762,7 +762,7 @@ To be able to use the `createModule` function, we will import the `calculatepiwa
 </html>
 ```
 
-The web browser can only load the `newtonraphsonwasm.js` file when hosted by a web server.
+The web browser can only load the `calculatepiwasm.js` file when hosted by a web server.
 Python ships with a built-in web server, we will use it to host the all files of the repository on port 8000.
 
 ```{.awk #host-files}
@@ -860,7 +860,7 @@ worker.onmessage = function(message) {
 }
 ```
 
-Like before we need a HTML page to run the JavaScript, but now we don't need to import the `newtonraphsonwasm.js` file here as it is imported in the `worker.js` file.
+Like before we need a HTML page to run the JavaScript, but now we don't need to import the `calculatepiwasm.js` file here as it is imported in the `worker.js` file.
 
 ```{.html file=src/js/example-web-worker.html}
 <!doctype html>
@@ -1404,7 +1404,7 @@ Like before we need to wait for the WebAssembly module to be initialized before 
 
 ```{.js file=src/js/worker-sweep.js}
 // this JavaScript snippet stored as src/js/worker-sweep.js
-importScripts('newtonraphsonwasm.js');
+importScripts('calculatepiwasm.js');
 
 onmessage = function(message) {
   if (message.data.type === 'CALCULATE') {

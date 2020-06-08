@@ -1,5 +1,5 @@
 // this JavaScript snippet stored as src/js/worker-sweep.js
-importScripts('newtonraphsonwasm.js');
+importScripts('calculatepiwasm.js');
 
 onmessage = function(message) {
   if (message.data.type === 'CALCULATE') {
