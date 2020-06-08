@@ -62,7 +62,7 @@ jobs:
         run: make run-webapp 2>&1 | tee ./run-webapp.log &
 
       - name: Test web application
-        run: http --ignore-stdin -f localhost:5001 epsilon=0.001 guess=-20
+        run: http --ignore-stdin -f localhost:5001 niter=500000000
 
       - name: Start web service in background
         run: make run-webservice 2>&1 | tee ./run-webservice.log &
@@ -81,7 +81,7 @@ jobs:
 
       - name: Test Celery web app
         run: |
-          http --ignore-stdin -hf localhost:5000 epsilon=0.001 guess=-20 | tee response.txt
+          http --ignore-stdin -hf localhost:5000 niter=500000000 | tee response.txt
           # Parse result url from response
           RESULT_URL=$(cat response.txt |grep Location |awk '{print $2}')
           sleep 2
