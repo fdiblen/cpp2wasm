@@ -62,7 +62,7 @@ The implementation of the algorithm would look like
 
 ```{.cpp #algorithm}
 // this C++ code snippet is later referred to as <<algorithm>>
-#include<stdc++.h>
+#include<bits/stdc++.h>
 #include <math.h>
 #include "calculatepi.hpp"
 

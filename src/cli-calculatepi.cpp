@@ -2,7 +2,7 @@
 #include<bits/stdc++.h>
 
 // this C++ code snippet is later referred to as <<algorithm>>
-#include<stdc++.h>
+#include<bits/stdc++.h>
 #include <math.h>
 #include "calculatepi.hpp"
 
