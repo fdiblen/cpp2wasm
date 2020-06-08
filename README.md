@@ -62,6 +62,7 @@ The implementation of the algorithm would look like
 
 ```{.cpp #algorithm}
 // this C++ code snippet is later referred to as <<algorithm>>
+#include <iostream>
 #include <math.h>
 #include "calculatepi.hpp"
 #define SEED 35791246
