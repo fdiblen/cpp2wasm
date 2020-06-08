@@ -1,10 +1,10 @@
 // this C++ snippet is stored as src/calculatepi.cpp
 #include<bits/stdc++.h>
+#include <iostream>
 
 // this C++ code snippet is later referred to as <<algorithm>>
 #include <math.h>
 #include "calculatepi.hpp"
-
 #define SEED 35791246
 
 namespace pirng
@@ -12,7 +12,7 @@ namespace pirng
 
 PiCalculate::PiCalculate(double niter) : niter(niter) {}
 
-// Function to find the root
+// Function to calculate PI
 double PiCalculate::calculate()
 {
   srand(SEED);
