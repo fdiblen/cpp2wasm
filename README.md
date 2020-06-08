@@ -109,7 +109,7 @@ We are now ready to call the algorithm in a simple CLI program. It would look li
 int main()
 {
   int niter = 5e8;
-  pirng::c pifinder(niter);
+  pirng::PiCalculate pifinder(niter);
   double pi = pifinder.calculate();
 
   std::cout << "The value of the pi is : " << pi << std::endl;

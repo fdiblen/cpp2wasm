@@ -40,7 +40,7 @@ double PiCalculate::calculate()
 int main()
 {
   int niter = 5e8;
-  pirng::c pifinder(niter);
+  pirng::PiCalculate pifinder(niter);
   double pi = pifinder.calculate();
 
   std::cout << "The value of the pi is : " << pi << std::endl;
