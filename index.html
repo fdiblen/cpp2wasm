@@ -26,7 +26,7 @@
           code: function(code, lang = '') {
             const info = lang;
             if (lang.startsWith('{')) {
-              // for example '{.cpp file=src/newtonraphson.hpp}' to 'cpp'
+              // for example '{.cpp file=src/calculatepi.hpp}' to 'cpp'
               lang = info.replace('{','').replace('}','').split(' ').find((d) => d.startsWith('.')).replace('.','');
             }
             const langOrMarkup = Prism.languages[lang] || Prism.languages.markup;

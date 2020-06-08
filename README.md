@@ -36,45 +36,20 @@ The code we are using came from [geeksforgeeks.org](https://www.geeksforgeeks.or
 
 Let's first define the mathematical equation, which we will be searching for its root, and the derivative of it.
 
-The equation and its derivative which we will use in this guide are $x^3 - x^2  + 2$ and $3x^2 - 2x$ respectively.
-
-```{.hpp file=src/algebra.hpp}
-// this C++ code snippet is store as src/algebra.hpp
-
-namespace algebra
-{
-
-// An example equation is x^3 - x^2  + 2
-double equation(double x)
-{
-  return x * x * x - x * x + 2;
-}
-
-// Derivative of the above equation which is 3*x^2 - 2*x
-double derivative(double x)
-{
-  return 3 * x * x - 2 * x;
-}
-
-} // namespace algebra
-```
-
 Next, we define the interface (C++ class).
 
-```{.cpp file=src/newtonraphson.hpp}
-// this C++ snippet is stored as src/newtonraphson.hpp
-#ifndef H_NEWTONRAPHSON_H
-#define H_NEWTONRAPHSON_H
+```{.cpp file=src/calculatepi.hpp}
+// this C++ snippet is stored as src/calculatepi.hpp
+#ifndef H_PICALC_H
+#define H_PICALC_H
 
-#include <string>
-
-namespace rootfinding {
-  class NewtonRaphson {
+namespace pirng {
+  class PiCalculate {
     public:
-      NewtonRaphson(double tolerancein);
-      double solve(double xin);
+      PiCalculate(double niter);
+      double calculate();
     private:
-      double tolerance;
+      int niter;
   };
 }
 
@@ -87,39 +62,45 @@ The implementation of the algorithm would look like
 
 ```{.cpp #algorithm}
 // this C++ code snippet is later referred to as <<algorithm>>
-#include "newtonraphson.hpp"
-#include "algebra.hpp"
+#include<bits/stdc++.h>
+#include <math.h>
+#include "calculatepi.hpp"
 
-using namespace algebra;
+#define SEED 35791246
 
-namespace rootfinding
+namespace pirng
 {
 
-NewtonRaphson::NewtonRaphson(double tolerancein) : tolerance(tolerancein) {}
+PiCalculate::PiCalculate(double niter) : niter(niter) {}
 
 // Function to find the root
-double NewtonRaphson::solve(double xin)
+double PiCalculate::calculate()
 {
-  double x = xin;
-  double delta_x = equation(x) / derivative(x);
-  while (abs(delta_x) >= tolerance)
-  {
-    delta_x = equation(x) / derivative(x);
+  srand(SEED);
 
-    // x_new = x_old - f(x) / f'(x)
-    x = x - delta_x;
+  double x, y;
+  int i, count = 0;
+  double z;
+
+  std::cout << "Iterations : " << niter << std::endl;
+
+  for ( i = 0; i < niter; i++) {
+    x = (double)rand()/RAND_MAX;
+    y = (double)rand()/RAND_MAX;
+    z = x*x + y*y;
+    if (z <= 1) count++;
   }
-  return x;
+  return (double)count/niter*4;
 };
 
 
-} // namespace rootfinding
+} // namespace pirng
 ```
 
 We are now ready to call the algorithm in a simple CLI program. It would look like
 
-```{.cpp file=src/cli-newtonraphson.cpp}
-// this C++ snippet is stored as src/newtonraphson.cpp
+```{.cpp file=src/cli-calculatepi.cpp}
+// this C++ snippet is stored as src/calculatepi.cpp
 #include<bits/stdc++.h>
 
 <<algorithm>>
@@ -127,12 +108,11 @@ We are now ready to call the algorithm in a simple CLI program. It would look li
 // Driver program to test above
 int main()
 {
-  double x0 = -20; // Initial values assumed
-  double epsilon = 0.001;
-  rootfinding::NewtonRaphson finder(epsilon);
-  double x1 = finder.solve(x0);
+  int niter = 5e8;
+  pirng::c pifinder(niter);
+  double pi = pifinder.calculate();
 
-  std::cout << "The value of the root is : " << x1 << std::endl;
+  std::cout << "The value of the pi is : " << pi << std::endl;
   return 0;
 }
 ```
@@ -140,19 +120,20 @@ int main()
 Compile with
 
 ```{.awk #build-cli}
-g++ src/cli-newtonraphson.cpp -o bin/newtonraphson.exe
+g++ src/cli-calculatepi.cpp -o bin/calculatepi.exe
 ```
 
 Run with
 
 ```{.awk #test-cli}
-./bin/newtonraphson.exe
+./bin/calculatepi.exe
 ```
 
 Should output
 
 ```shell
-The value of the root is : -1.62292
+Iterations : 500000000
+The value of the pi is : 3.14154
 ```
 
 A C++ algorithm is a collection of functions/classes that can perform a mathematical computation.
@@ -180,19 +161,13 @@ An example of JSON schema:
   "$id": "https://nlesc-jcer.github.io/cpp2wasm/NNRequest.json",
   "type": "object",
   "properties": {
-    "epsilon": {
-      "title": "Epsilon",
+    "niter": {
+      "title": "Number of interations",
       "type": "number",
       "minimum": 0
-    },
-    "guess": {
-      "title": "Initial guess",
-      "type": "integer",
-      "minimum": -100,
-      "maximum": 100
     }
   },
-  "required": ["epsilon", "guess"],
+  "required": ["niter"],
   "additionalProperties": false
 }
 ```
@@ -201,8 +176,7 @@ And a valid document:
 
 ```json
 {
-  "epsilon": 0.001,
-  "guess": -20
+  "niter": 1000000
 }
 ```
 
@@ -215,8 +189,8 @@ In the [Apache httpd web server](https://httpd.apache.org/docs/2.4/howto/cgi.htm
 The executable can read the request body from the stdin for and the response must be printed to the stdout.
 A response should consist of the content type such as ``application/json`` or ``text/html``, followed by the content itself. A web service which accepts and returns JSON documents can for example look like:
 
-```{.cpp file=src/cgi-newtonraphson.cpp}
-// this C++ snippet is stored as src/cgi-newtonraphson.hpp
+```{.cpp file=src/cgi-calculatepi.cpp}
+// this C++ snippet is stored as src/cgi-calculatepi.hpp
 #include <string>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -227,19 +201,18 @@ int main(int argc, char *argv[])
 {
   std::cout << "Content-type: application/json" << std::endl << std::endl;
 
-  // Retrieve epsilon and guess from request body
+  // Retrieve niter from request body
   nlohmann::json request(nlohmann::json::parse(std::cin));
-  double epsilon = request["epsilon"];
-  double guess = request["guess"];
+  double niter = request["niter"];
 
-  // Find root
-  rootfinding::NewtonRaphson finder(epsilon);
-  double root = finder.solve(guess);
+  // Calculate PI
+  pirng::PiCalculate pifinder(niter);
+  double pi = pifinder.calculate();
 
   // Assemble response
   nlohmann::json response;
-  response["guess"] = guess;
-  response["root"] = root;
+  response["niter"] = niter;
+  response["pi"] = pi;
   std::cout << response.dump(2) << std::endl;
   return 0;
 }
@@ -250,13 +223,13 @@ Where `nlohmann/json.hpp` is a JSON serialization/unserialization C++ header onl
 This can be compiled with
 
 ```{.awk #build-cgi}
-g++ -Ideps src/cgi-newtonraphson.cpp -o apache2/cgi-bin/newtonraphson
+g++ -Ideps src/cgi-calculatepi.cpp -o apache2/cgi-bin/calculatepi
 ```
 
 The CGI script can be tested directly with
 
 ```{.awk #test-cgi}
-echo '{"guess":-20, "epsilon":0.001}' | apache2/cgi-bin/newtonraphson
+echo '{"niter": 500000000}' | apache2/cgi-bin/calculatepi
 ```
 
 It should output
@@ -265,8 +238,8 @@ It should output
 Content-type: application/json
 
 {
-  "guess": -20.0,
-  "root": -1.622923986083026
+  "niter": 500000000,
+  "root": 3.14154
 }
 ```
 
@@ -297,7 +270,7 @@ And in another shell call CGI script using curl
 ```shell
 curl --header "Content-Type: application/json" \
   --request POST \
-  --data '{"guess":-20, "epsilon":0.001}' \
+  --data '{"niter":500000000}' \
   http://localhost:8080/cgi-bin/newtonraphson
 ```
 
@@ -305,8 +278,8 @@ Should return the following JSON document as a response
 
 ```json
 {
-  "guess": -20,
-  "root":-1.62292
+  "niter": 500000000,
+  "root":3.14154
 }
 ```
 
@@ -336,12 +309,12 @@ To use pybind11, it must installed with pip
 pip install pybind11
 ```
 
-Pybind11 requires a bindings to expose C++ constants/functions/enumerations/classes to Python. The bindings are implemented by using the C++ `PYBIND11_MODULE` macro to configure what will be exposed to Python. The bindings can be compiled to a shared library called `newtonraphsonpy*.so` which can be imported into Python.
+Pybind11 requires a bindings to expose C++ constants/functions/enumerations/classes to Python. The bindings are implemented by using the C++ `PYBIND11_MODULE` macro to configure what will be exposed to Python. The bindings can be compiled to a shared library called `calculatepipy*.so` which can be imported into Python.
 
-For example the bindings of `newtonraphson.hpp:NewtonRaphson` class would look like:
+For example the bindings of `calculatepi.hpp:NewtonRaphson` class would look like:
 
-```{.cpp file=src/py-newtonraphson.cpp}
-// this C++ snippet is stored as src/py-newtonraphson.cpp
+```{.cpp file=src/py-calculatepi.cpp}
+// this C++ snippet is stored as src/py-calculatepi.cpp
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -349,13 +322,12 @@ For example the bindings of `newtonraphson.hpp:NewtonRaphson` class would look l
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(newtonraphsonpy, m) {
-    py::class_<rootfinding::NewtonRaphson>(m, "NewtonRaphson")
-        .def(py::init<double>(), py::arg("epsilon"))
-        .def("solve",
-             &rootfinding::NewtonRaphson::solve,
-             py::arg("guess"),
-             "Find root starting from initial guess"
+PYBIND11_MODULE(calculatepipy, m) {
+    py::class_<pirng::PiCalculate>(m, "PiCalculate")
+        .def(py::init<int>(), py::arg("niter"))
+        .def("calculate",
+             &pirng::PiCalculate::calculate,
+             "Caulculate pi for given number of iterations"
         )
     ;
 }
@@ -365,18 +337,18 @@ Compile with
 
 ```{.awk #build-py}
 g++ -O3 -Wall -shared -std=c++14 -fPIC `python3 -m pybind11 --includes` \
-src/py-newtonraphson.cpp -o src/py/newtonraphsonpy`python3-config --extension-suffix`
+src/py-calculatepi.cpp -o src/py/calculatepipy`python3-config --extension-suffix`
 ```
 
 In Python it can be used:
 
 ```{.python file=src/py/example.py}
 # this Python snippet is stored as src/py/example.py
-from newtonraphsonpy import NewtonRaphson
+from calculatepipy import PiCalculate
 
-finder = NewtonRaphson(epsilon=0.001)
-root = finder.solve(guess=-20)
-print(root)
+pifinder = PiCalculate(niter=500000000)
+pi = pifinder.calculate()
+print(pi)
 ```
 
 The Python example can be run with
@@ -388,7 +360,7 @@ python src/py/example.py
 It will output something like
 
 ```shell
--1.0000001181322415
+3.14154
 ```
 
 ### Web application
@@ -418,10 +390,8 @@ The first page with the form and submit button is defined as a function returnin
 def form():
   return '''<!doctype html>
     <form method="POST">
-      <label for="epsilon">Epsilon</label>
-      <input type="number" name="epsilon" value="0.001">
-      <label for="guess">Guess</label>
-      <input type="number" name="guess" value="-20">
+      <label for="niter">Iterations</label>
+      <input type="number" name="niter" value="500000000">
       <button type="submit">Submit</button>
     </form>'''
 ```
@@ -432,15 +402,14 @@ The form will be submitted to the '/' path with the POST method. In the handler 
 # this Python code snippet is later referred to as <<py-calculate>>
 @app.route('/', methods=['POST'])
 def calculate():
-  epsilon = float(request.form['epsilon'])
-  guess = float(request.form['guess'])
+  niter = int(request.form['niter'])
 
-  from newtonraphsonpy import NewtonRaphson
-  finder = NewtonRaphson(epsilon)
-  root = finder.solve(guess)
+  from calculatepipy import PiCalculate
+  pifinder = PiCalculate(niter)
+  pi = pifinder.calculate()
 
   return f'''<!doctype html>
-    <p>With epsilon of {epsilon} and a guess of {guess} the found root is {root}.</p>'''
+    <p>With {niter} iterations calculated pi is {pi}.</p>'''
 ```
 
 ```{.python #py-calculate}
@@ -509,13 +478,13 @@ def calculate(self, epsilon, guess):
   if not self.request.called_directly:
     self.update_state(state='INITIALIZING')
   time.sleep(5)
-  from newtonraphsonpy import NewtonRaphson
-  finder = NewtonRaphson(epsilon)
+  from calculatepipy import PiCalculate
+  pifinder = PiCalculate(niter)
   if not self.request.called_directly:
     self.update_state(state='FINDING')
   time.sleep(5)
-  root = finder.solve(guess)
-  return {'root': root, 'guess': guess, 'epsilon':epsilon}
+  pi = pifinder.calculate()
+  return {'pi': pi, 'niter': niter}
 ```
 
 Instead of running the calculation when the submit button is pressed, we will submit the calculation task to the task queue by using the `.delay()` function.
@@ -525,8 +494,7 @@ The submission will return a job identifier we can use later to get the status a
 # this Python code snippet is later referred to as <<py-submit>>
 @app.route('/', methods=['POST'])
 def submit():
-  epsilon = float(request.form['epsilon'])
-  guess = float(request.form['guess'])
+  niter = int(request.form['niter'])
   from tasks import calculate
   job = calculate.delay(epsilon, guess)
   return redirect(url_for('result', jobid=job.id))
@@ -543,11 +511,10 @@ def result(jobid):
   job.maybe_throw()
   if job.successful():
     result = job.get()
-    epsilon = result['epsilon']
-    guess = result['guess']
-    root = result['root']
+    niter = result['niter']
+    pi = result['pi']
     return f'''<!doctype html>
-      <p>With epsilon of {epsilon} and a guess of {guess} the found root is {root}.</p>'''
+      <p>With {niter} iterations calculated pi is {pi}.</p>'''
   else:
     return f'''<!doctype html>
       <p>{job.status}<p>'''
@@ -583,7 +550,7 @@ Tasks will be run by the Celery worker. The worker can be started with
 PYTHONPATH=src/py celery worker -A tasks
 ```
 
-(The PYTHONPATH environment variable is set so the Celery worker can find the `tasks.py` and `newtonraphsonpy.*.so` files in the `src/py/` directory)
+(The PYTHONPATH environment variable is set so the Celery worker can find the `tasks.py` and `calculatepipy.*.so` files in the `src/py/` directory)
 
 To test the web service
 
@@ -624,21 +591,19 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: 0.1.0
 paths:
-  /api/newtonraphson:
+  /api/calculatepi:
     post:
-      description: Perform root finding with the Newton Raphson algorithm
-      operationId: api.calculate
+      description: Calculate PI using random numbers      operationId: api.calculate
       requestBody:
         content:
           'application/json':
             schema:
               $ref: '#/components/schemas/NRRequest'
             example:
-              epsilon: 0.001
-              guess: -20
+              niter: 500000000
       responses:
         '200':
-          description: The found root
+          description: PI calculated
           content:
             application/json:
               schema:
@@ -648,22 +613,19 @@ components:
     NRRequest:
       type: object
       properties:
-        epsilon:
+        niter:
           type: number
           minimum: 0
-        guess:
-          type: number
       required:
-        - epsilon
-        - guess
+        - niter
       additionalProperties: false
     NRResponse:
       type: object
       properties:
-        root:
+        pi:
           type: number
       required:
-        - root
+        - pi
       additionalProperties: false
 ```
 
@@ -675,12 +637,11 @@ The operation identifier (`operationId`) in the specification gets translated by
 ```{.python file=src/py/api.py}
 # this Python snippet is stored as src/py/api.py
 def calculate(body):
-  epsilon = body['epsilon']
-  guess = body['guess']
-  from newtonraphsonpy import NewtonRaphson
-  finder = NewtonRaphson(epsilon)
-  root = finder.solve(guess)
-  return {'root': root}
+  niter = body['niter']
+  from calculatepipy import PiCalculate
+  pifinder = PiCalculate(niter)
+  pi = pifinder.calculate()
+  return {'pi': pi}
 ```
 
 To provide the `calculate` method as a web service we must install Connexion Python library (with the Swagger UI for later testing)
@@ -730,30 +691,30 @@ Instead of writing code in the WebAssembly language, there are compilers that ca
 
 The binding of the C++ code will be
 
-```{.cpp file=src/wasm-newtonraphson.cpp}
-// this C++ snippet is stored as src/wasm-newtonraphson.cpp
+```{.cpp file=src/wasm-calculatepi.cpp}
+// this C++ snippet is stored as src/wasm-calculatepi.cpp
 #include <emscripten/bind.h>
 
 <<algorithm>>
 
 using namespace emscripten;
 
-EMSCRIPTEN_BINDINGS(newtonraphsonwasm) {
-  class_<rootfinding::NewtonRaphson>("NewtonRaphson")
+EMSCRIPTEN_BINDINGS(calculatepiwasm) {
+  class_<pirng::PiCalculate>("PiCalculate")
     .constructor<double>()
-    .function("solve", &rootfinding::NewtonRaphson::solve)
+    .function("calculate", &pirng::PiCalculate::calculate)
     ;
 }
 ```
 
 The algorithm and binding can be compiled into a WebAssembly module with the Emscripten compiler called `emcc`.
-To make live easier we configure the compile command to generate a `src/js/newtonraphsonwasm.js` file which exports the `createModule` function.
+To make live easier we configure the compile command to generate a `src/js/calculatepiwasm.js` file which exports the `createModule` function.
 
 ```{.awk #build-wasm}
-emcc --bind -o src/js/newtonraphsonwasm.js -s MODULARIZE=1 -s EXPORT_NAME=createModule src/wasm-newtonraphson.cpp
+emcc --bind -o src/js/calculatepiwasm.js -s MODULARIZE=1 -s EXPORT_NAME=createModule src/wasm-calculatepi.cpp
 ```
 
-The compilation also generates a `src/js/newtonraphsonwasm.wasm` file which will be loaded with the `createModule` function.
+The compilation also generates a `src/js/calculatepiwasm.wasm` file which will be loaded with the `createModule` function.
 
 The WebAssembly module must be loaded and initialized by calling the `createModule` function and waiting for the JavaScript promise to resolve.
 
@@ -771,10 +732,9 @@ The root finder can be called with.
 
 ```{.js #wasm-calculate}
 // this JavaScript snippet is later referred to as <<wasm-calculate>>
-const epsilon = 0.001;
-const finder = new module.NewtonRaphson(epsilon);
-const guess = -20;
-const root = finder.solve(guess);
+const niter = 500000000;
+const pifinder = new module.PiCalculate(niter);
+const pi = pifinder.calculate();
 ```
 
 Set the root answer to the HTML page using document manipulation functions: [getElementById](https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById), [innerHTML](https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML). In order to display the result, we use a HTML element with an id of `answer`. This element is defined in the HTML page which we will define soon.
@@ -784,7 +744,7 @@ document.getElementById('answer').innerHTML = root.toFixed(2);
 ```
 
 To run the JavaScript in a web browser a HTML page is needed.
-To be able to use the `createModule` function, we will import the `newtonraphsonwasm.js` with a script tag.
+To be able to use the `createModule` function, we will import the `calculatepiwasm.js` with a script tag.
 
 ```{.html file=src/js/example.html}
 <!doctype html>
@@ -792,7 +752,7 @@ To be able to use the `createModule` function, we will import the `newtonraphson
 <html lang="en">
   <head>
     <title>Example</title>
-    <script type="text/javascript" src="newtonraphsonwasm.js"></script>
+    <script type="text/javascript" src="calculatepiwasm.js"></script>
     <script>
       <<wasm-promise>>
     </script>
@@ -834,7 +794,7 @@ We need to send the worker a message with description for the work it should do.
 // this JavaScript snippet is appended to <<worker-consumer>>
 worker.postMessage({
   type: 'CALCULATE',
-  payload: { epsilon: 0.001, guess: -20 }
+  payload: { niter: 500000000}
 });
 ```
 
@@ -851,7 +811,7 @@ Before we can handle the message we need to import the WebAssembly module.
 
 ```{.js file=src/js/worker.js}
 // this JavaScript snippet is stored as src/js/worker.js
-importScripts('newtonraphsonwasm.js');
+importScripts('calculatepiwasm.js');
 
 <<worker-provider-onmessage>>
 ```
@@ -872,10 +832,9 @@ Let's calculate the result (root) based on the payload parameters in the incomin
 
 ```{.js #perform-calc-in-worker}
 // this JavaScript snippet is before referred to as <<perform-calc-in-worker>>
-const epsilon = message.data.payload.epsilon;
-const finder = new module.NewtonRaphson(epsilon);
-const guess = message.data.payload.guess;
-const root = finder.solve(guess);
+const niter = message.data.payload.niter;
+const pifinder = new module.PiCalculate(niter);
+const pi = pifinder.calculate();
 ```
 
 And send the result back to the web worker consumer as a outgoing message.
@@ -885,7 +844,7 @@ And send the result back to the web worker consumer as a outgoing message.
 postMessage({
   type: 'RESULT',
   payload: {
-    root: root
+    pi: pi
   }
 });
 ```
@@ -896,7 +855,7 @@ Listen for messages from worker and when a result message is received put the re
 // this JavaScript snippet is appended to <<worker-consumer>>
 worker.onmessage = function(message) {
   if (message.data.type === 'RESULT') {
-    const root = message.data.payload.root;
+    const pi = message.data.payload.pi;
     <<render-answer>>
   }
 }
@@ -981,7 +940,7 @@ A React application is constructed from React components. The simplest React com
 ```{.jsx #heading-component}
 // this JavaScript snippet is later referred to as <<heading-component>>
 function Heading() {
-  const title = 'Root finding web application';
+  const title = 'PI Calculation web application';
   return <h1>{title}</h1>
 }
 ```
@@ -1006,7 +965,7 @@ A transformer like [Babel](https://babeljs.io/docs/en/next/babel-standalone.html
 
 ```js
 function Heading() {
-  const title = 'Root finding web application';
+  const title = 'PI Calculation web application';
   return React.createElement('h1', null, `{title}`);
 }
 ```
@@ -1029,12 +988,8 @@ The form in JSX can be written in the following way:
 { /* this JavaScript snippet is later referred to as <<react-form>> */ }
 <form onSubmit={handleSubmit}>
   <label>
-    Epsilon:
-    <input name="epsilon" type="number" value={epsilon} onChange={onEpsilonChange}/>
-  </label>
-  <label>
-    Initial guess:
-    <input name="guess" type="number" value={guess} onChange={onGuessChange}/>
+    Number of iterations:
+    <input name="niter" type="number" value={niter} onChange={onNiterChange}/>
   </label>
   <input type="submit" value="Submit" />
 </form>
@@ -1048,7 +1003,7 @@ To store the value we will use the [React useState hook](https://reactjs.org/doc
 
 ```{.js #react-state}
 // this JavaScript snippet is later referred to as <<react-state>>
-const [epsilon, setEpsilon] = React.useState(0.001);
+const [niter, setNiter] = React.useState(500000000);
 ```
 
 The argument of the `useState` function is the initial value. The `epsilon` variable contains the current value for epsilon and `setEpsilon` is a function to set epsilon to a new value.
@@ -1057,21 +1012,12 @@ The input tag in the form will call the `onChange` function with a event object.
 
 ```{.js #react-state}
 // this JavaScript snippet is appended to <<react-state>>
-function onEpsilonChange(event) {
-  setEpsilon(Number(event.target.value));
+function onNiterChange(event) {
+  setNiter(Number(event.target.value));
 }
 ```
 
-We will follow the same steps for the guess input as well.
 
-```{.js #react-state}
-// this JavaScript snippet is appended to <<react-state>>
-const [guess, setGuess] = React.useState(-20);
-
-function onGuessChange(event) {
-  setGuess(Number(event.target.value));
-}
-```
 
 We are ready to implement the `handleSubmit` function which will process the form data.
 The function will get, similar to the onChange of the input tag, an event object.
@@ -1095,7 +1041,7 @@ We have to post a message to the worker with the values from the form.
 // this JavaScript snippet is appended to <<handle-submit>>
 worker.postMessage({
   type: 'CALCULATE',
-  payload: { epsilon: epsilon, guess: guess }
+  payload: { niter: niter}
 });
 ```
 
@@ -1104,7 +1050,7 @@ The initial value of the result is set to `undefined` as the result is only know
 
 ```{.js #react-state}
 // this JavaScript snippet is appended to <<react-state>>
-const [root, setRoot] = React.useState(undefined);
+const [pi, setPi] = React.useState(undefined);
 ```
 
 When the worker is done it will send a message back to the app. The app needs to store the result value (`root`) using `setRoot`. The worker will then be terminated because it did its job.
@@ -1113,8 +1059,8 @@ When the worker is done it will send a message back to the app. The app needs to
 // this JavaScript snippet is appended to <<handle-submit>>
 worker.onmessage = function(message) {
     if (message.data.type === 'RESULT') {
-      const result = message.data.payload.root;
-      setRoot(result);
+      const result = message.data.payload.pi;
+      setPi(result);
       worker.terminate();
   }
 };
@@ -1127,10 +1073,10 @@ When the `root` property value is set then we will show it.
 ```{.jsx #result-component}
 // this JavaScript snippet is later referred to as <<result-component>>
 function Result(props) {
-  const root = props.root;
+  const pi = props.pi;
   let message = 'Not submitted';
-  if (root !== undefined) {
-    message = 'Root = ' + root;
+  if (pi !== undefined) {
+    message = 'PI = ' + pi;
   }
   return <div id="answer">{message}</div>;
 }
@@ -1154,7 +1100,7 @@ function App() {
     <div>
       <Heading/>
       <<react-form>>
-      <Result root={root}/>
+      <Result pi={pi}/>
     </div>
   );
 }
@@ -1195,19 +1141,13 @@ const schema = {
   "$id": "https://nlesc-jcer.github.io/cpp2wasm/NNRequest.json",
   "type": "object",
   "properties": {
-    "epsilon": {
-      "title": "Epsilon",
+    "niter": {
+      "title": "niter",
       "type": "number",
       "minimum": 0
-    },
-    "guess": {
-      "title": "Initial guess",
-      "type": "integer",
-      "minimum": -100,
-      "maximum": 100
     }
   },
-  "required": ["epsilon", "guess"],
+  "required": ["niter"],
   "additionalProperties": false
 }
 ```
@@ -1254,8 +1194,7 @@ The values in the form must be initialized and updated whenever the form changes
 ```{.js #jsonschema-app}
 // this JavaScript snippet is appended to <<jsonschema-app>>
 const [formData, setFormData] = React.useState({
-  epsilon: 0.001,
-  guess: -20
+  niter: 500000000
 });
 
 function handleChange(event) {
@@ -1279,7 +1218,7 @@ The `handleSubmit` function recieves the form input values and use the web worke
 
 ```{.js #jsonschema-app}
 // this JavaScript snippet is appended to <<jsonschema-app>>
-const [root, setRoot] = React.useState(undefined);
+const [pi, setPi] = React.useState(undefined);
 
 function handleSubmit(submission, event) {
   event.preventDefault();
@@ -1290,8 +1229,8 @@ function handleSubmit(submission, event) {
   });
   worker.onmessage = function(message) {
       if (message.data.type === 'RESULT') {
-        const result = message.data.payload.root;
-        setRoot(result);
+        const result = message.data.payload.pi;
+        setPi(result);
         worker.terminate();
     }
   };
@@ -1309,7 +1248,7 @@ function App() {
     <div>
       <Heading/>
       <<jsonschema-form>>
-      <Result root={root}/>
+      <Result pi={pi}/>
     </div>
   );
 }
@@ -1354,38 +1293,31 @@ Lets make a new JSON schema for the form in which we can set a max, min and step
 const schema = {
   "type": "object",
   "properties": {
-    "epsilon": {
-      "title": "Epsilon",
+    "niter": {
+      "title": "niter",
       "type": "object",
       "properties": {
         "min": {
           "type": "number",
           "minimum": 0,
-          "default": 0.0001
+          "default":100000000
         },
         "max": {
           "type": "number",
           "minimum": 0,
-          "default": 0.001
+          "default": 10000000000
         },
         "step": {
           "type": "number",
           "minimum": 0,
-          "default": 0.0001
+          "default": 100000000
         }
       },
       "required": ["min", "max", "step"],
       "additionalProperties": false
-    },
-    "guess": {
-      "title": "Initial guess",
-      "type": "number",
-      "minimum": -100,
-      "maximum": 100,
-      "default": -20
     }
   },
-  "required": ["epsilon", "guess"],
+  "required": ["niter"],
   "additionalProperties": false
 }
 ```
@@ -1395,12 +1327,11 @@ The worker will recieve a payload like
 
 ```json
 {
-  "epsilon": {
-    "min": 0.0001,
-    "max": 0.001,
-    "step": 0.0001
-  },
-  "guess": -20
+  "niter": {
+    "min": 100000000,
+    "max": 10000000000,
+    "step": 100000000
+  }
 }
 ```
 
@@ -1408,10 +1339,9 @@ The worker will send back an array containing objects with the root result, the 
 
 ```json
 [{
-  "epsilon": 0.0001,
-  "guess": -20,
-  "root": -1,
-  "duration": 0.61
+  "niter": 500000000,
+  "pi": 3.14154,
+  "duration": 1297
 }]
 ```
 
@@ -1419,22 +1349,21 @@ To perform the sweep we will first unpack the payload.
 
 ```{.js #calculate-sweep}
 // this JavaScript snippet is later referred to as <<calculate-sweep>>
-const {min, max, step} = message.data.payload.epsilon;
-const guess = message.data.payload.guess;
+const {min, max, step} = message.data.payload.niter;
 ```
 
 The result array needs to be initialized.
 
 ```{.js #calculate-sweep}
 // this JavaScript snippet appended to <<calculate-sweep>>
-const roots = [];
+const pis = [];
 ```
 
-Lets use a [classic for loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for) to iterate over requested the epsilons.
+Lets use a [classic for loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for) to iterate over requested the iterations.
 
 ```{.js #calculate-sweep}
 // this JavaScript snippet appended to <<calculate-sweep>>
-for (let epsilon = min; epsilon <= max; epsilon += step) {
+for (let niter = min; niter <= max; niter += step) {
 ```
 
 To measure the duration of a calculation we use the [performance.now()](https://developer.mozilla.org/en-US/docs/Web/API/Performance/now) method which returns a timestamp in milliseconds.
@@ -1442,8 +1371,8 @@ To measure the duration of a calculation we use the [performance.now()](https://
 ```{.js #calculate-sweep}
   // this JavaScript snippet appended to <<calculate-sweep>>
   const t0 = performance.now();
-  const finder = new module.NewtonRaphson(epsilon);
-  const root = finder.find(guess);
+  const pifinder = new module.PiCalculate(niter);
+  const pi = pifinder.calculate();
   const duration = performance.now() - t0;
 ```
 
@@ -1451,10 +1380,9 @@ We append the root result object using [shorthand property names](https://develo
 
 ```{.js #calculate-sweep}
   // this JavaScript snippet appended to <<calculate-sweep>>
-  roots.push({
-    epsilon,
-    guess,
-    root,
+  pis.push({
+    niter,
+    pi,
     duration
   });
 ```
@@ -1467,7 +1395,7 @@ To complete the sweep calculation we need to close the for loop and post the res
 postMessage({
   type: 'RESULT',
   payload: {
-    roots
+    pis
   }
 });
 ```
@@ -1492,7 +1420,7 @@ To handle the submit we will start a worker, send the form data to the worker, r
 
 ```{.js #plot-app}
 // this JavaScript snippet is appended to <<plot-app>>
-const [roots, setRoots] = React.useState([]);
+const [pis, setPis] = React.useState([]);
 
 function handleSubmit(submission, event) {
   event.preventDefault();
@@ -1503,8 +1431,8 @@ function handleSubmit(submission, event) {
   });
   worker.onmessage = function(message) {
       if (message.data.type === 'RESULT') {
-        const result = message.data.payload.roots;
-        setRoots(result);
+        const result = message.data.payload.pis;
+        setPis(result);
         worker.terminate();
     }
   };
@@ -1519,10 +1447,10 @@ The specification for a scatter plot of the `epsilon` against the `duration` loo
 // this JavaScript snippet is later referred to as <<vega-lite-spec>>
 const spec = {
   "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
-  "data": { "values": roots },
+  "data": { "values": pis },
   "mark": "point",
   "encoding": {
-    "x": { "field": "epsilon", "type": "quantitative" },
+    "x": { "field": "niter", "type": "quantitative" },
     "y": { "field": "duration", "type": "quantitative", "title": "Duration (ms)" }
   },
   "width": 800,
@@ -1543,7 +1471,7 @@ In React we must use the [useRef](https://reactjs.org/docs/hooks-reference.html#
 
 ```{.jsx #plot-component}
 // this JavaScript snippet is later referred to as <<plot-component>>
-function Plot({roots}) {
+function Plot({pis}) {
   const container = React.useRef(null);
 
   function didUpdate() {
@@ -1553,7 +1481,7 @@ function Plot({roots}) {
     <<vega-lite-spec>>
     vegaEmbed(container.current, spec);
   }
-  const dependencies = [container, roots];
+  const dependencies = [container, pis];
   React.useEffect(didUpdate, dependencies);
 
   return <div ref={container}/>;
@@ -1589,7 +1517,7 @@ function App() {
     <div>
       <Heading/>
       <<jsonschema-form>>
-      <Plot roots={roots}/>
+      <Plot pis={pis}/>
     </div>
   );
 }

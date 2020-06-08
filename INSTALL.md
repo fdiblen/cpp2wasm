@@ -22,7 +22,7 @@ All the commands in the [README.md](README.md) and [CONTRIBUTING.md](CONTRIBUTIN
 UID := $(shell id -u)
 # Prevent suicide by excluding Makefile
 ENTANGLED := $(shell perl -ne 'print $$1,"\n" if /^```\{.*file=(.*)\}/' *.md | grep -v Makefile | sort -u)
-COMPILED := bin/newtonraphson.exe src/py/newtonraphsonpy.*.so apache2/cgi-bin/newtonraphson src/js/newtonraphsonwasm.js  src/js/newtonraphsonwasm.wasm
+COMPILED := bin/calculatepi.exe src/py/calculatepipy.*.so apache2/cgi-bin/calculatepi src/js/calculatepiwasm.js  src/js/calculatepiwasm.wasm
 
 entangle: *.md
 	<<pandoc-tangle>>
@@ -46,22 +46,22 @@ pip-celery:
 pip-connexion:
 	<<pip-connexion>>
 
-bin/newtonraphson.exe: src/cli-newtonraphson.cpp
+bin/calculatepi.exe: src/cli-calculatepi.cpp
 	<<build-cli>>
 
-test-cli: bin/newtonraphson.exe
+test-cli: bin/calculatepi.exe
 	<<test-cli>>
 
-apache2/cgi-bin/newtonraphson: src/cgi-newtonraphson.cpp
+apache2/cgi-bin/calculatepi: src/cgi-calculatepi.cpp
 	<<build-cgi>>
 
-test-cgi: apache2/cgi-bin/newtonraphson
+test-cgi: apache2/cgi-bin/calculatepi
 	<<test-cgi>>
 
-src/py/newtonraphsonpy.*.so: src/py-newtonraphson.cpp
+src/py/calculatepipy.*.so: src/py-calculatepi.cpp
 	<<build-py>>
 
-test-py: src/py/example.py src/py/newtonraphsonpy.*.so
+test-py: src/py/example.py src/py/calculatepipy.*.so
 	<<test-py>>
 
 test: test-cli test-cgi test-py test-webservice
@@ -84,24 +84,24 @@ start-redis:
 stop-redis:
 	<<stop-redis>>
 
-run-webapp: src/py/newtonraphsonpy.*.so
+run-webapp: src/py/calculatepipy.*.so
 	<<run-webapp>>
 
-run-webservice: src/py/newtonraphsonpy.*.so
+run-webservice: src/py/calculatepipy.*.so
 	<<run-webservice>>
 
 test-webservice:
 	<<test-webservice>>
 
-run-celery-worker: src/py/newtonraphsonpy.*.so
+run-celery-worker: src/py/calculatepipy.*.so
 	<<run-celery-worker>>
 
-run-celery-webapp: src/py/newtonraphsonpy.*.so
+run-celery-webapp: src/py/calculatepipy.*.so
 	<<run-celery-webapp>>
 
-build-wasm: src/js/newtonraphsonwasm.js src/js/newtonraphsonwasm.wasm
+build-wasm: src/js/calculatepiwasm.js src/js/calculatepiwasm.wasm
 
-src/js/newtonraphsonwasm.js src/js/newtonraphsonwasm.wasm: src/wasm-newtonraphson.cpp
+src/js/calculatepiwasm.js src/js/calculatepiwasm.wasm: src/wasm-calculatepi.cpp
 	<<build-wasm>>
 
 host-files: build-wasm

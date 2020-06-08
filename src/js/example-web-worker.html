@@ -9,12 +9,12 @@
       // this JavaScript snippet is appended to <<worker-consumer>>
       worker.postMessage({
         type: 'CALCULATE',
-        payload: { epsilon: 0.001, guess: -20 }
+        payload: { niter: 500000000}
       });
       // this JavaScript snippet is appended to <<worker-consumer>>
       worker.onmessage = function(message) {
         if (message.data.type === 'RESULT') {
-          const root = message.data.payload.root;
+          const pi = message.data.payload.pi;
           document.getElementById('answer').innerHTML = root.toFixed(2);
         }
       }

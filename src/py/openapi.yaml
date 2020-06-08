@@ -7,21 +7,19 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: 0.1.0
 paths:
-  /api/newtonraphson:
+  /api/calculatepi:
     post:
-      description: Perform root finding with the Newton Raphson algorithm
-      operationId: api.calculate
+      description: Calculate PI using random numbers      operationId: api.calculate
       requestBody:
         content:
           'application/json':
             schema:
               $ref: '#/components/schemas/NRRequest'
             example:
-              epsilon: 0.001
-              guess: -20
+              niter: 500000000
       responses:
         '200':
-          description: The found root
+          description: PI calculated
           content:
             application/json:
               schema:
@@ -31,20 +29,17 @@ components:
     NRRequest:
       type: object
       properties:
-        epsilon:
+        niter:
           type: number
           minimum: 0
-        guess:
-          type: number
       required:
-        - epsilon
-        - guess
+        - niter
       additionalProperties: false
     NRResponse:
       type: object
       properties:
-        root:
+        pi:
           type: number
       required:
-        - root
+        - pi
       additionalProperties: false

@@ -1,6 +1,6 @@
 # this Python snippet is stored as src/py/example.py
-from newtonraphsonpy import NewtonRaphson
+from calculatepipy import PiCalculate
 
-finder = NewtonRaphson(epsilon=0.001)
-root = finder.solve(guess=-20)
-print(root)
+pifinder = PiCalculate(niter=500000000)
+pi = pifinder.calculate()
+print(pi)

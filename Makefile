@@ -4,7 +4,7 @@
 UID := $(shell id -u)
 # Prevent suicide by excluding Makefile
 ENTANGLED := $(shell perl -ne 'print $$1,"\n" if /^```\{.*file=(.*)\}/' *.md | grep -v Makefile | sort -u)
-COMPILED := bin/newtonraphson.exe src/py/newtonraphsonpy.*.so apache2/cgi-bin/newtonraphson src/js/newtonraphsonwasm.js  src/js/newtonraphsonwasm.wasm
+COMPILED := bin/calculatepi.exe src/py/calculatepipy.*.so apache2/cgi-bin/calculatepi src/js/calculatepiwasm.js  src/js/calculatepiwasm.wasm
 
 entangle: *.md
 	docker run --rm --user ${UID} -v ${PWD}:/data nlesc/pandoc-tangle:0.5.0 --preserve-tabs *.md
@@ -28,23 +28,23 @@ pip-celery:
 pip-connexion:
 	pip install connexion[swagger-ui]
 
-bin/newtonraphson.exe: src/cli-newtonraphson.cpp
-	g++ src/cli-newtonraphson.cpp -o bin/newtonraphson.exe
+bin/calculatepi.exe: src/cli-calculatepi.cpp
+	g++ src/cli-calculatepi.cpp -o bin/calculatepi.exe
 
-test-cli: bin/newtonraphson.exe
-	./bin/newtonraphson.exe
+test-cli: bin/calculatepi.exe
+	./bin/calculatepi.exe
 
-apache2/cgi-bin/newtonraphson: src/cgi-newtonraphson.cpp
-	g++ -Ideps src/cgi-newtonraphson.cpp -o apache2/cgi-bin/newtonraphson
+apache2/cgi-bin/calculatepi: src/cgi-calculatepi.cpp
+	g++ -Ideps src/cgi-calculatepi.cpp -o apache2/cgi-bin/calculatepi
 
-test-cgi: apache2/cgi-bin/newtonraphson
-	echo '{"guess":-20, "epsilon":0.001}' | apache2/cgi-bin/newtonraphson
+test-cgi: apache2/cgi-bin/calculatepi
+	echo '{"niter": 500000000}' | apache2/cgi-bin/calculatepi
 
-src/py/newtonraphsonpy.*.so: src/py-newtonraphson.cpp
+src/py/calculatepipy.*.so: src/py-calculatepi.cpp
 	g++ -O3 -Wall -shared -std=c++14 -fPIC `python3 -m pybind11 --includes` \
-	src/py-newtonraphson.cpp -o src/py/newtonraphsonpy`python3-config --extension-suffix`
+	src/py-calculatepi.cpp -o src/py/calculatepipy`python3-config --extension-suffix`
 
-test-py: src/py/example.py src/py/newtonraphsonpy.*.so
+test-py: src/py/example.py src/py/calculatepipy.*.so
 	python src/py/example.py
 
 test: test-cli test-cgi test-py test-webservice
@@ -67,25 +67,25 @@ start-redis:
 stop-redis:
 	docker stop some-redis
 
-run-webapp: src/py/newtonraphsonpy.*.so
+run-webapp: src/py/calculatepipy.*.so
 	python src/py/webapp.py
 
-run-webservice: src/py/newtonraphsonpy.*.so
+run-webservice: src/py/calculatepipy.*.so
 	python src/py/webservice.py
 
 test-webservice:
 	curl -X POST "http://localhost:8080/api/newtonraphson" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"epsilon\":0.001,\"guess\":-20}"
 
-run-celery-worker: src/py/newtonraphsonpy.*.so
+run-celery-worker: src/py/calculatepipy.*.so
 	PYTHONPATH=src/py celery worker -A tasks
 
-run-celery-webapp: src/py/newtonraphsonpy.*.so
+run-celery-webapp: src/py/calculatepipy.*.so
 	python src/py/webapp-celery.py
 
-build-wasm: src/js/newtonraphsonwasm.js src/js/newtonraphsonwasm.wasm
+build-wasm: src/js/calculatepiwasm.js src/js/calculatepiwasm.wasm
 
-src/js/newtonraphsonwasm.js src/js/newtonraphsonwasm.wasm: src/wasm-newtonraphson.cpp
-	emcc --bind -o src/js/newtonraphsonwasm.js -s MODULARIZE=1 -s EXPORT_NAME=createModule src/wasm-newtonraphson.cpp
+src/js/calculatepiwasm.js src/js/calculatepiwasm.wasm: src/wasm-calculatepi.cpp
+	emcc --bind -o src/js/calculatepiwasm.js -s MODULARIZE=1 -s EXPORT_NAME=createModule src/wasm-calculatepi.cpp
 
 host-files: build-wasm
 	python3 -m http.server 8000

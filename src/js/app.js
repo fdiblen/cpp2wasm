@@ -1,14 +1,14 @@
 // this JavaScript snippet is later referred to as <<heading-component>>
 function Heading() {
-  const title = 'Root finding web application';
+  const title = 'PI Calculation web application';
   return <h1>{title}</h1>
 }
 // this JavaScript snippet is later referred to as <<result-component>>
 function Result(props) {
-  const root = props.root;
+  const pi = props.pi;
   let message = 'Not submitted';
-  if (root !== undefined) {
-    message = 'Root = ' + root;
+  if (pi !== undefined) {
+    message = 'PI = ' + pi;
   }
   return <div id="answer">{message}</div>;
 }
@@ -16,19 +16,13 @@ function Result(props) {
 // this JavaScript snippet appenended to src/js/app.js
 function App() {
   // this JavaScript snippet is later referred to as <<react-state>>
-  const [epsilon, setEpsilon] = React.useState(0.001);
+  const [niter, setNiter] = React.useState(500000000);
   // this JavaScript snippet is appended to <<react-state>>
-  function onEpsilonChange(event) {
-    setEpsilon(Number(event.target.value));
+  function onNiterChange(event) {
+    setNiter(Number(event.target.value));
   }
   // this JavaScript snippet is appended to <<react-state>>
-  const [guess, setGuess] = React.useState(-20);
-
-  function onGuessChange(event) {
-    setGuess(Number(event.target.value));
-  }
-  // this JavaScript snippet is appended to <<react-state>>
-  const [root, setRoot] = React.useState(undefined);
+  const [pi, setPi] = React.useState(undefined);
 
   function handleSubmit(event) {
     // this JavaScript snippet is later referred to as <<handle-submit>>
@@ -38,13 +32,13 @@ function App() {
     // this JavaScript snippet is appended to <<handle-submit>>
     worker.postMessage({
       type: 'CALCULATE',
-      payload: { epsilon: epsilon, guess: guess }
+      payload: { niter: niter}
     });
     // this JavaScript snippet is appended to <<handle-submit>>
     worker.onmessage = function(message) {
         if (message.data.type === 'RESULT') {
-          const result = message.data.payload.root;
-          setRoot(result);
+          const result = message.data.payload.pi;
+          setPi(result);
           worker.terminate();
       }
     };
@@ -56,16 +50,12 @@ function App() {
       { /* this JavaScript snippet is later referred to as <<react-form>> */ }
       <form onSubmit={handleSubmit}>
         <label>
-          Epsilon:
-          <input name="epsilon" type="number" value={epsilon} onChange={onEpsilonChange}/>
-        </label>
-        <label>
-          Initial guess:
-          <input name="guess" type="number" value={guess} onChange={onGuessChange}/>
+          Number of iterations:
+          <input name="niter" type="number" value={niter} onChange={onNiterChange}/>
         </label>
         <input type="submit" value="Submit" />
       </form>
-      <Result root={root}/>
+      <Result pi={pi}/>
     </div>
   );
 }

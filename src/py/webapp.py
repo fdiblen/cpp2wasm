@@ -7,25 +7,22 @@ app = Flask(__name__)
 def form():
   return '''<!doctype html>
     <form method="POST">
-      <label for="epsilon">Epsilon</label>
-      <input type="number" name="epsilon" value="0.001">
-      <label for="guess">Guess</label>
-      <input type="number" name="guess" value="-20">
+      <label for="niter">Iterations</label>
+      <input type="number" name="niter" value="500000000">
       <button type="submit">Submit</button>
     </form>'''
 
 # this Python code snippet is later referred to as <<py-calculate>>
 @app.route('/', methods=['POST'])
 def calculate():
-  epsilon = float(request.form['epsilon'])
-  guess = float(request.form['guess'])
+  niter = int(request.form['niter'])
 
-  from newtonraphsonpy import NewtonRaphson
-  finder = NewtonRaphson(epsilon)
-  root = finder.solve(guess)
+  from calculatepipy import PiCalculate
+  pifinder = PiCalculate(niter)
+  pi = pifinder.calculate()
 
   return f'''<!doctype html>
-    <p>With epsilon of {epsilon} and a guess of {guess} the found root is {root}.</p>'''
+    <p>With {niter} iterations calculated pi is {pi}.</p>'''
   # this Python code snippet is appended to <<py-calculate>>
 
 app.run(port=5001)

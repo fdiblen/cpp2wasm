@@ -10,10 +10,10 @@ def calculate(self, epsilon, guess):
   if not self.request.called_directly:
     self.update_state(state='INITIALIZING')
   time.sleep(5)
-  from newtonraphsonpy import NewtonRaphson
-  finder = NewtonRaphson(epsilon)
+  from calculatepipy import PiCalculate
+  pifinder = PiCalculate(niter)
   if not self.request.called_directly:
     self.update_state(state='FINDING')
   time.sleep(5)
-  root = finder.solve(guess)
-  return {'root': root, 'guess': guess, 'epsilon':epsilon}
+  pi = pifinder.calculate()
+  return {'pi': pi, 'niter': niter}

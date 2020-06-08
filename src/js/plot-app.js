@@ -1,12 +1,12 @@
 // this JavaScript snippet stored as src/js/plot-app.js
 // this JavaScript snippet is later referred to as <<heading-component>>
 function Heading() {
-  const title = 'Root finding web application';
+  const title = 'PI Calculation web application';
   return <h1>{title}</h1>
 }
 
 // this JavaScript snippet is later referred to as <<plot-component>>
-function Plot({roots}) {
+function Plot({pis}) {
   const container = React.useRef(null);
 
   function didUpdate() {
@@ -16,10 +16,10 @@ function Plot({roots}) {
     // this JavaScript snippet is later referred to as <<vega-lite-spec>>
     const spec = {
       "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
-      "data": { "values": roots },
+      "data": { "values": pis },
       "mark": "point",
       "encoding": {
-        "x": { "field": "epsilon", "type": "quantitative" },
+        "x": { "field": "niter", "type": "quantitative" },
         "y": { "field": "duration", "type": "quantitative", "title": "Duration (ms)" }
       },
       "width": 800,
@@ -27,7 +27,7 @@ function Plot({roots}) {
     };
     vegaEmbed(container.current, spec);
   }
-  const dependencies = [container, roots];
+  const dependencies = [container, pis];
   React.useEffect(didUpdate, dependencies);
 
   return <div ref={container}/>;
@@ -52,42 +52,35 @@ function App() {
   const schema = {
     "type": "object",
     "properties": {
-      "epsilon": {
-        "title": "Epsilon",
+      "niter": {
+        "title": "niter",
         "type": "object",
         "properties": {
           "min": {
             "type": "number",
             "minimum": 0,
-            "default": 0.0001
+            "default":100000000
           },
           "max": {
             "type": "number",
             "minimum": 0,
-            "default": 0.001
+            "default": 10000000000
           },
           "step": {
             "type": "number",
             "minimum": 0,
-            "default": 0.0001
+            "default": 100000000
           }
         },
         "required": ["min", "max", "step"],
         "additionalProperties": false
-      },
-      "guess": {
-        "title": "Initial guess",
-        "type": "number",
-        "minimum": -100,
-        "maximum": 100,
-        "default": -20
       }
     },
-    "required": ["epsilon", "guess"],
+    "required": ["niter"],
     "additionalProperties": false
   }
   // this JavaScript snippet is appended to <<plot-app>>
-  const [roots, setRoots] = React.useState([]);
+  const [pis, setPis] = React.useState([]);
 
   function handleSubmit(submission, event) {
     event.preventDefault();
@@ -98,8 +91,8 @@ function App() {
     });
     worker.onmessage = function(message) {
         if (message.data.type === 'RESULT') {
-          const result = message.data.payload.roots;
-          setRoots(result);
+          const result = message.data.payload.pis;
+          setPis(result);
           worker.terminate();
       }
     };
@@ -110,13 +103,12 @@ function App() {
       <Heading/>
       { /* this JavaScript snippet is later referred to as <<jsonschema-form>>  */}
       <Form
-        uiSchema={uiSchema}
         schema={schema}
         formData={formData}
         onChange={handleChange}
         onSubmit={handleSubmit}
       />
-      <Plot roots={roots}/>
+      <Plot pis={pis}/>
     </div>
   );
 }

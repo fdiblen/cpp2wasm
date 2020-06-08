@@ -8,18 +8,15 @@ app = Flask(__name__)
 def form():
   return '''<!doctype html>
     <form method="POST">
-      <label for="epsilon">Epsilon</label>
-      <input type="number" name="epsilon" value="0.001">
-      <label for="guess">Guess</label>
-      <input type="number" name="guess" value="-20">
+      <label for="niter">Iterations</label>
+      <input type="number" name="niter" value="500000000">
       <button type="submit">Submit</button>
     </form>'''
 
 # this Python code snippet is later referred to as <<py-submit>>
 @app.route('/', methods=['POST'])
 def submit():
-  epsilon = float(request.form['epsilon'])
-  guess = float(request.form['guess'])
+  niter = int(request.form['niter'])
   from tasks import calculate
   job = calculate.delay(epsilon, guess)
   return redirect(url_for('result', jobid=job.id))
@@ -32,11 +29,10 @@ def result(jobid):
   job.maybe_throw()
   if job.successful():
     result = job.get()
-    epsilon = result['epsilon']
-    guess = result['guess']
-    root = result['root']
+    niter = result['niter']
+    pi = result['pi']
     return f'''<!doctype html>
-      <p>With epsilon of {epsilon} and a guess of {guess} the found root is {root}.</p>'''
+      <p>With {niter} iterations calculated pi is {pi}.</p>'''
   else:
     return f'''<!doctype html>
       <p>{job.status}<p>'''
