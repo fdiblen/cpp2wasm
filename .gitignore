@@ -9,6 +9,9 @@ cypress/videos
 bin/newtonraphson.exe
 src/py/newtonraphsonpy.*.so
 apache2/cgi-bin/newtonraphson
+bin/calculatepi.exe
+src/py/calculatepipy.*.so
+apache2/cgi-bin/calculatepi
 
 # Ignore entangled db
 .entangled/db.sqlite
