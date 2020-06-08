@@ -4,7 +4,6 @@
 #include <nlohmann/json.hpp>
 
 // this C++ code snippet is later referred to as <<algorithm>>
-#include<bits/stdc++.h>
 #include <math.h>
 #include "calculatepi.hpp"
 
