@@ -9,7 +9,8 @@ info:
 paths:
   /api/calculatepi:
     post:
-      description: Calculate PI using random numbers      operationId: api.calculate
+      description: Calculate PI using random numbers
+      operationId: api.calculate
       requestBody:
         content:
           'application/json':
