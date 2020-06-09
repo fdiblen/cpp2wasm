@@ -41,7 +41,7 @@ describe('src/js/example-web-worker.html', () => {
 ```
 
 Third, a test for the [React/form/Web worker/WebAssembly combination](http://localhost:8000/src/js/example-app.html).
-Let us also change the initial guess value.
+Let us also change the initial niter value.
 
 ```{.js file=cypress/integration/example-app_spec.js}
 // Cypress.config('defaultCommandTimeout', 300000);

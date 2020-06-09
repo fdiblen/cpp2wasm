@@ -604,7 +604,7 @@ const pi = pifinder.calculate();
 ```
 
 ```{.js #render-answer}
-document.getElementById('answer').innerHTML = pi.toFixed(2);
+document.getElementById('answer').innerHTML = pi.toFixed(4);
 ```
 
 To run the JavaScript in a web browser a HTML page is needed.
