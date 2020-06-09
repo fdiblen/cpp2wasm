@@ -373,7 +373,7 @@ import time
 <<celery-config>>
 
 @capp.task(bind=True)
-def calculate(self, epsilon, guess):
+def calculate(self, niter):
   if not self.request.called_directly:
     self.update_state(state='INITIALIZING')
   time.sleep(5)
@@ -392,7 +392,7 @@ def calculate(self, epsilon, guess):
 def submit():
   niter = int(request.form['niter'])
   from tasks import calculate
-  job = calculate.delay(epsilon, guess)
+  job = calculate.delay(niter)
   return redirect(url_for('result', jobid=job.id))
 ```
 
@@ -1087,11 +1087,7 @@ Embedded below is the example app hosted on [GitHub pages](https://nlesc-jcer.gi
 
 <iframe width="100%" height="320" src="https://nlesc-jcer.github.io/cpp2wasm/src/js/example-jsonschema-form.html" /></iframe>
 
-If you enter a negative number in the `epsilon` field the form will become invalid with a error message.
-
 ### Visualization
-
-Lets make a new JSON schema for the form in which we can set a max, min and step for epsilon.
 
 ```{.js #plot-app}
 // this JavaScript snippet is later referred to as <<jsonschema-app>>
@@ -1244,9 +1240,7 @@ function handleSubmit(submission, event) {
 }
 ```
 
-Now that we got data, we are ready to plot. We use the
- [Vega-Lite specification](https://vega.github.io/vega-lite/docs/spec.html) to declare the plot.
-The specification for a scatter plot of the `epsilon` against the `duration` looks like.
+The specification for a scatter plot of the `niter` against the `duration` looks like.
 
 ```{.js #vega-lite-spec}
 // this JavaScript snippet is later referred to as <<vega-lite-spec>>
@@ -1357,7 +1351,7 @@ Like before we also need to host the files in a web server with
 python3 -m http.server 8000
 ```
 
-Visit [http://localhost:8000/src/js/example-plot.html](http://localhost:8000/src/js/example-plot.html) to see the epsilon/duration plot.
+Visit [http://localhost:8000/src/js/example-plot.html](http://localhost:8000/src/js/example-plot.html) to see the niter/duration plot.
 
 Embedded below is the example app hosted on [GitHub pages](https://nlesc-jcer.github.io/cpp2wasm/src/js/example-plot.html)
 

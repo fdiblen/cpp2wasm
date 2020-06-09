@@ -18,7 +18,7 @@ def form():
 def submit():
   niter = int(request.form['niter'])
   from tasks import calculate
-  job = calculate.delay(epsilon, guess)
+  job = calculate.delay(niter)
   return redirect(url_for('result', jobid=job.id))
 
 # this Python code snippet is later referred to as <<py-result>>

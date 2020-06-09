@@ -6,7 +6,7 @@ from celery import Celery
 capp = Celery('tasks', broker='redis://localhost:6379', backend='redis://localhost:6379')
 
 @capp.task(bind=True)
-def calculate(self, epsilon, guess):
+def calculate(self, niter):
   if not self.request.called_directly:
     self.update_state(state='INITIALIZING')
   time.sleep(5)
