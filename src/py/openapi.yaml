@@ -1,7 +1,7 @@
 # this yaml snippet is stored as src/py/openapi.yaml
 openapi: 3.0.0
 info:
-  title: Root finder
+  title: PI Calculator
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html

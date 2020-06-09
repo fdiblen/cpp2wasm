@@ -1,3 +1,4 @@
+// Cypress.config('defaultCommandTimeout', 300000);
 describe('src/js/example-plot.html', () => {
   it('should render 3.14', () => {
     cy.visit('http://localhost:8000/src/js/example-plot.html');

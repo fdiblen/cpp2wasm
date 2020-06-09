@@ -1,42 +1,8 @@
-# Guide to make C++ available as a web application
+# Benchmarking for cpp2wasm
 
-- [Guide to make C++ available as a web application](#guide-to-make-c-available-as-a-web-application)
-  - [JSON schema](#json-schema)
-  - [CGI script](#cgi-script)
-  - [Web framework](#web-framework)
-  - [Python](#python)
-    - [Accessing C++ function from Python](#accessing-c-function-from-python)
-    - [Web application](#web-application)
-    - [Long running tasks](#long-running-tasks)
-    - [Web service](#web-service)
-  - [JavaScript](#JavaScript)
-    - [Accessing C++ function from JavaScript in web browser](#accessing-c-function-from-JavaScript-in-web-browser)
-    - [Executing long running methods in JavaScript](#executing-long-running-methods-in-JavaScript)
-  - [Single page application](#single-page-application)
-    - [React component](#react-component)
-    - [JSON schema powered form](#json-schema-powered-form)
-    - [Visualization](#visualization)
+This is an example which uses [cpp2wasm](https://github.com/NLESC-JCER/cpp2wasm) guide. In this example, the algorithm calculates pi instead of finding the root of an equation. Please read the `cpp2wasm` guide to understand each step in this example.
 
-[![CI](https://github.com/NLESC-JCER/cpp2wasm/workflows/CI/badge.svg)](https://github.com/NLESC-JCER/cpp2wasm/actions?query=workflow%3ACI)
-[![Markdown Link Checker](https://github.com/NLESC-JCER/cpp2wasm/workflows/Check%20Markdown%20links/badge.svg)](https://github.com/NLESC-JCER/cpp2wasm/actions?query=workflow%3A%22Check%20Markdown%20links%22)
-[![Entangled](https://img.shields.io/badge/entangled-Use%20the%20source!-%2300aeff)](https://entangled.github.io/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3876112.svg)](https://doi.org/10.5281/zenodo.3876112)
-
-Document describing a way that a researcher with a C++ algorithm can make it available as a web application. We will host the C++ algorithm as an web application in several different ways:
-
-- as a cgi script
-- as a Python application via pybind11, Flask and Celery
-- in the web browser using web assembly and JavaScript
-
-This guide was written and tested on Linux operating system. The required dependencies to run this guide are described in the [INSTALL.md](INSTALL.md) document. If you want to contribute to the guide see [CONTRIBUTING.md](CONTRIBUTING.md). The [repo](https://github.com/NLESC-JCER/cpp2wasm) contains the files that can be made from the code snippets in this guide. The code snippets can be [entangled](https://entangled.github.io/) to files using any of [these](CONTRIBUTING.md#tips) methods.
-
-The [Newton-Raphson root finding algorithm](https://en.wikipedia.org/wiki/Newton%27s_method) will be the use case.
-The algorithm is explained in [this video series](https://www.youtube.com/watch?v=cOmAk82cr9M).
-The code we are using came from [geeksforgeeks.org](https://www.geeksforgeeks.org/program-for-newton-raphson-method/).
-
-Let's first define the mathematical equation, which we will be searching for its root, and the derivative of it.
-
-Next, we define the interface (C++ class).
+## The C++ code
 
 ```{.cpp file=src/calculatepi.hpp}
 // this C++ snippet is stored as src/calculatepi.hpp
@@ -55,10 +21,6 @@ namespace pirng {
 
 #endif
 ```
-
-In this C++ class, `solve` function will be performing the root finding task. We now need to define the algorithm so that `solve` function does what it supposed to do.
-
-The implementation of the algorithm would look like
 
 ```{.cpp #algorithm}
 // this C++ code snippet is later referred to as <<algorithm>>
@@ -96,7 +58,7 @@ double PiCalculate::calculate()
 } // namespace pirng
 ```
 
-We are now ready to call the algorithm in a simple CLI program. It would look like
+The simple CLI program.
 
 ```{.cpp file=src/cli-calculatepi.cpp}
 // this C++ snippet is stored as src/calculatepi.cpp
@@ -136,22 +98,8 @@ Iterations : 500000000
 The value of the pi is : 3.14154
 ```
 
-A C++ algorithm is a collection of functions/classes that can perform a mathematical computation.
-
-The web application is a set of web pages with a form to fill the input required for the algorithm, a submit button that will start the execution and a page that shows the output of the algorithm. The output should be presented in a usable format like a table, chart/plot and download.
-
-The C++ code has the following characteristics:
-
-- A C++ algorithm which can be called as function in a C++ library or command line executable
-- The input and output files of the command line executables adhere to a JSON schema
-- Uses Makefile as build tool
-- Copies of C++ dependencies are in the git repository
 
 ## JSON schema
-
-To make the same input and output reusable from either the command line or web service, the [JSON format](http://json.org/) was chosen. As the JSON format is easy read and write by human and machines.
-
-Compared with a binary format or a comma separated file, JSON is more verbose, but is more self documenting. It is less verbose than [XML](https://en.wikipedia.org/wiki/XML), and just like there is an [XML schema definition](https://en.wikipedia.org/wiki/XML_Schema_(W3C)) for validation of XML, there is an equivalent for JSON called [JSON schema](https://json-schema.org/). JSON schema is used to describe the shape of a JSON document and make sure root finder consumers know how to provide the input and what to expect from the output. [YAML format](https://yaml.org/) was not chosen, because it is a superset of JSON and JSON has all the expressiveness root finder required. YAML allows for comments while this is not supported in JSON. Also JSON is the lingua franca for web services.
 
 An example of JSON schema:
 
@@ -182,13 +130,6 @@ And a valid document:
 
 ## CGI script
 
-![cgi](images/cgi.svg.png "CGI")
-
-The classic way to run programs when accessing a url is to use the Common Gateway Interface (CGI).
-In the [Apache httpd web server](https://httpd.apache.org/docs/2.4/howto/cgi.html) you can configure a directory as a ScriptAlias, when visiting a file inside that directory the file will be executed.
-The executable can read the request body from the stdin for and the response must be printed to the stdout.
-A response should consist of the content type such as ``application/json`` or ``text/html``, followed by the content itself. A web service which accepts and returns JSON documents can for example look like:
-
 ```{.cpp file=src/cgi-calculatepi.cpp}
 // this C++ snippet is stored as src/cgi-calculatepi.hpp
 #include <string>
@@ -218,8 +159,6 @@ int main(int argc, char *argv[])
 }
 ```
 
-Where `nlohmann/json.hpp` is a JSON serialization/unserialization C++ header only library to convert a JSON string to and from a data type.
-
 This can be compiled with
 
 ```{.awk #build-cgi}
@@ -242,8 +181,6 @@ Content-type: application/json
   "root": 3.14154
 }
 ```
-
-Example Apache config file to host executables in `./apache2/cgi-bin/` directory as `http://localhost:8080/cgi-bin/`.
 
 ```{.python file=apache2/apache2.conf}
 # this Apache2 configuration snippet is stored as apache2/apache2.conf
@@ -283,33 +220,16 @@ Should return the following JSON document as a response
 }
 ```
 
-The problem with CGI scripts is when the program does some initialization, you have to wait for it each visit. It is better to do the initialization once when the web service is starting up.
-
-## Web framework
-
-![flask](images/flask.svg.png "Flask")
-
-A web framework is an abstraction layer for making web applications. It takes care of mapping a request on a certain url to a user defined function. And mapping the return of a user defined function to a response like an HTML page or an error message.
-
 ## Python
 
-Writing a web application in C++ can be done, but other languages like Python are better equipped.
-Python has a big community making web applications, which resulted in a big ecosystem of web frameworks, template engines, tutorials.
-
-Python packages can be installed using `pip` from the [Python Package Index](https://pypi.org/). It is customary to work with [virtual environments](https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments) to isolate the dependencies for a certain application and not pollute the global OS paths.
 
 ### Accessing C++ function from Python
-
-To make a web application in Python, the C++ functions need to be called somehow.
-Python can call functions in a C++ library if its functions use [Python.h datatypes](https://docs.python.org/3.7/extending/index.html). This requires a lot of boilerplate and conversions, several tools are out there that make the boilerplate/conversions much simpler. The tool we chose to use is [pybind11](https://github.com/pybind/pybind11) as it is currently (May 2019) actively maintained and is a header-only library.
 
 To use pybind11, it must installed with pip
 
 ```{.awk #pip-pybind11}
 pip install pybind11
 ```
-
-Pybind11 requires a bindings to expose C++ constants/functions/enumerations/classes to Python. The bindings are implemented by using the C++ `PYBIND11_MODULE` macro to configure what will be exposed to Python. The bindings can be compiled to a shared library called `calculatepipy*.so` which can be imported into Python.
 
 For example the bindings of `calculatepi.hpp:NewtonRaphson` class would look like:
 
@@ -365,22 +285,11 @@ It will output something like
 
 ### Web application
 
-Now that the C++ functions can be called from Python it is time to call the function from a web page.
-To assist in making a web application a web framework needs to be picked. The [Flask](https://flask.palletsprojects.com/) web framework was chosen as it minimalistic and has a large active community.
-
 The Flask Python library can be installed with
 
 ```{.awk #pip-flask}
 pip install flask
 ```
-
-The web application has 3 kinds of pages:
-
-1. a page with form and submit button,
-2. a page to show the progress of the calculation
-3. and a page which shows the result of the calculation. Each calculation will have it's own submit and result page.
-
-Each page is available on a different url. In Flask the way urls are mapped to Python function is done by adding a [route decorator](https://flask.palletsprojects.com/en/1.1.x/quickstart/#routing) (`@app.route`) to the function.
 
 The first page with the form and submit button is defined as a function returning a HTML form.
 
@@ -395,8 +304,6 @@ def form():
       <button type="submit">Submit</button>
     </form>'''
 ```
-
-The form will be submitted to the '/' path with the POST method. In the handler of this route we want to perform the calculation and return the result HTML page. To get the submitted values we use the Flask global [request](https://flask.palletsprojects.com/en/1.1.x/quickstart/#accessing-request-data) object. To construct the returned HTML we use [f-strings](https://docs.python.org/3/reference/lexical_analysis.html#formatted-string-literals) to replace the variable names with the variable values.
 
 ```{.python #py-calculate}
 # this Python code snippet is later referred to as <<py-calculate>>
@@ -440,10 +347,7 @@ To test we can visit [http://localhost:5001](http://localhost:5001) fill the for
 
 ### Long-running tasks
 
-When performing a long calculation (more than 30 seconds), the end-user requires feedback of the progress. In a normal request/response cycle, feedback is only returned in the response. To give feedback during the calculation, the computation must be offloaded to a task queue. In Python, a commonly used task queue is [celery](http://docs.celeryproject.org/). While the calculation is running on some worker it is possible to have a progress page which can check in the queue what the progress is of the calculation.
-
-Celery needs a broker for a queue and result storage.
-We'll use [redis](https://redis.io/) in a Docker container as Celery broker, because it's simple to setup. Redis can be started with the following command
+Redis can be started with the following command
 
 ```{.awk #start-redis}
 docker run --rm -d -p 6379:6379 --name some-redis redis
@@ -454,8 +358,6 @@ To use Celery we must install the redis flavored version with
 ```{.awk #pip-celery}
 pip install celery[redis]
 ```
-
-Let's set up a method that can be submitted to the Celery task queue.
 First configure Celery to use the Redis database.
 
 ```{.python #celery-config}
@@ -463,9 +365,6 @@ First configure Celery to use the Redis database.
 from celery import Celery
 capp = Celery('tasks', broker='redis://localhost:6379', backend='redis://localhost:6379')
 ```
-
-When a method is decorated with the Celery task decorator then it can be submitted to the Celery task queue.
-We'll add some ``sleep``s to demonstrate what would happen with a long running calculation. We'll also tell Celery about in which step the calculation is; later, we can display this step to the user.
 
 ```{.python file=src/py/tasks.py}
 # this Python snippet is stored as src/py/tasks.py
@@ -486,9 +385,6 @@ def calculate(self, epsilon, guess):
   pi = pifinder.calculate()
   return {'pi': pi, 'niter': niter}
 ```
-
-Instead of running the calculation when the submit button is pressed, we will submit the calculation task to the task queue by using the `.delay()` function.
-The submission will return a job identifier we can use later to get the status and result of the job. The web browser will redirect to a url with the job identifier in it.
 
 ```{.python #py-submit}
 # this Python code snippet is later referred to as <<py-submit>>
@@ -566,26 +462,13 @@ docker stop some-redis
 
 ### Web service
 
-![swagger](images/swagger.svg.png "Swagger")
-
-A web application is meant for consumption by humans and web service is meant for consumption by machines or other programs.
-So instead of returning HTML pages a web service will accept and return machine readable documents like JSON documents. A web service is an application programming interface (API) based on web technologies.
-
-A web service has a number of paths or urls to which a request can be sent and a response received.
-The interface can be defined with [OpenAPI specification](https://github.com/OAI/OpenAPI-Specification) (previously known as [Swagger](https://swagger.io/)). The OpenAPI spec uses JSON schema to define request/response types. Making the JSON schema re-usable between the web service and command line interface.
-The OpenAPI specifiation can either be generated by the web service provider or be a static document or contract. The contract-first approach allows for both consumer and provider to come to an agreement on the contract and work more or less independently on implementation. The contract-first approach was used for the root finding web service.
-
-To make a web service which adheres to the OpenAPI specification contract, it is possible to generate a skeleton using the [generator](https://github.com/OpenAPITools/openapi-generator).
-Each time the contract changes the generator must be re-run. The generator uses the Python based web framework [Connexion](https://github.com/zalando/connexion).
-For the Python based root finding web service, Connexion was used as the web framework as it maps each path+method combination in the contract to a Python function and will handle the validation and serialization. The OpenAPI web service can be tested with [Swagger UI](https://swagger.io/tools/swagger-ui/), the UI allows browsing through the available paths, try them out by constructing a request and shows the curl command which can be used to call the web service. Swagger UI comes bundled with the Connexion framework.
-
 The OpenAPI specification for performing root finding would look like
 
 ```{.yaml file=src/py/openapi.yaml}
 # this yaml snippet is stored as src/py/openapi.yaml
 openapi: 3.0.0
 info:
-  title: Root finder
+  title: PI Calculator
   license:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
@@ -630,11 +513,6 @@ components:
       additionalProperties: false
 ```
 
-The webservice consists of a single path with the POST method which receives a request and returns a response.
-The request and response are in JSON format and adhere to their respective JSON schemas.
-
-The operation identifier (`operationId`) in the specification gets translated by Connexion to a Python method that will be called when the path is requested. Connexion calls the function with the JSON parsed request body.
-
 ```{.python file=src/py/api.py}
 # this Python snippet is stored as src/py/api.py
 def calculate(body):
@@ -677,18 +555,8 @@ curl -X POST "http://localhost:8080/api/calculatepi" -H "accept: application/jso
 
 ## JavaScript
 
-![wasm](images/wasm.svg.png "WebAssembly")
-
-JavaScript is the de facto programming language for web browsers.
-The JavaScript engine in the Chrome browser called V8 has been wrapped in a runtime engine called Node.js which can execute JavaScript code outside the browser.
 
 ### Accessing C++ function from JavaScript in web browser
-
-For a long time web browsers could only execute non-JavaScript code using plugins like Flash.
-Later tools where made that could transpile non-JavaScript code to JavaScript. The performance was less than running native code. To run code as fast as native code, the [WebAssembly](https://webassembly.org/) language was developed. WebAssembly is a low-level, [Assembly](https://en.wikipedia.org/wiki/Assembly_language)-like language with a compact binary format.
-The binary format is stored as a WebAssembly module or `*.wasm` file, which can be loaded by all modern web browsers.
-
-Instead of writing code in the WebAssembly language, there are compilers that can take C++/C code and compile it to wasm. [Emscripten](https://emscripten.org) is the most popular C++ to wasm compiler. Emscripten has been successfully used to port game engines like the Unreal engine to the browser making it possible to have complex 3D games in the browser without needing to install anything else than the web browser. To call C++ code (which has been compiled to wasm) from JavaScript, a binding is required. The binding will map C++ constructs to their JavaScript equivalent and back. The binding called [embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html#embind) is declared in a C++ file which is included in the compilation.
 
 The binding of the C++ code will be
 
@@ -727,7 +595,7 @@ createModule().then((module) => {
 });
 ```
 
-The `module` variable contains the `NewtonRaphson` class we defined in the binding above.
+The `module` variable contains the `PiCalculate` class we defined in the binding above.
 
 The root finder can be called with.
 
@@ -764,7 +632,6 @@ To be able to use the `createModule` function, we will import the `calculatepiwa
 </html>
 ```
 
-The web browser can only load the `calculatepiwasm.js` file when hosted by a web server.
 Python ships with a built-in web server, we will use it to host the all files of the repository on port 8000.
 
 ```{.awk #host-files}
@@ -776,11 +643,7 @@ Embedded below is the example hosted on [GitHub pages](https://nlesc-jcer.github
 
 [https://nlesc-jcer.github.io/cpp2wasm/src/js/example.html](https://nlesc-jcer.github.io/cpp2wasm/src/js/example.html ':include :type=iframe width=100% height=60px').
 
-The result of root finding was calculated using the C++ algorithm compiled to a WebAssembly module, executed by some JavaScript and rendered on a HTML page.
-
 ### Executing long running methods in JavaScript
-
-Executing a long running C++ method will block the browser from running any other code like updating the user interface. In order to avoid this, the method can be run in the background using [web workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers). A web worker runs in its own thread and can be interacted with from JavaScript using messages.
 
 We need to instantiate a web worker which we will implement later in `src/js/worker.js`.
 
@@ -891,28 +754,12 @@ Embedded below is the example hosted on [GitHub pages](https://nlesc-jcer.github
 
 <iframe width="100%" height="60" src="https://nlesc-jcer.github.io/cpp2wasm/src/js/example-web-worker.html" /></iframe>
 
-The result of root finding was calculated using the C++ algorithm compiled to a WebAssembly module, imported in a web worker (separate thread), executed by JavaScript with messages to/from the web worker and rendered on a HTML page.
 
 ## Single page application
 
-![react](images/react.svg.png "React")
-
-In the [Web application](#web-application) section, a common approach is to render an entire HTML page even if a subset of elements requires a change. With the advances in the web browser (JavaScript) engines including methods to fetch JSON documents from a web service, it has become possible to address this shortcoming. The so-called [Single Page Applications](https://en.wikipedia.org/wiki/Single-page_application) (SPA) enable changes to be made in a part of the page without rendering the entire page. To ease SPA development, a number of frameworks have been developed. The most popular front-end web frameworks are (as of July 2019):
-
-- [React](https://reactjs.org/)
-- [Vue.js](https://vuejs.org/)
-- [Angular](https://angular.io/)
-
-Their pros and cons are summarized [here](https://en.wikipedia.org/wiki/Comparison_of_JavaScript_frameworks#Features).
-
-For Newton-Raphson web application, we selected React because its small API footprint (light-weight) and the use of functional programming paradigm.
-
-The C++ algorithm is compiled into a wasm file using bindings. When a calculation form is submitted in the React application a web worker loads the wasm file, starts the calculation, renders the result. With this architecture the application only needs cheap static file hosting to host the HTML, js and wasm files. **The calculation will be done in the web browser on the end users machine instead of a server**.
+**The calculation will be done in the web browser on the end users machine instead of a server**.
 
 ### React component
-
-To render the React application we need a HTML tag as a container. We will give it the identifier `container` which will use later when
-we implement the React application in the `app.js` file.
 
 ```{.html file=src/js/example-app.html}
 <!doctype html>
@@ -971,8 +818,6 @@ function Heading() {
 }
 ```
 
-JXS is syntactic sugar that makes React components easier to write and read. In the rest of the chapter, we will use JSX.
-
 To transform JSX we need to import Babel.
 
 ```{.html #imports}
@@ -980,9 +825,6 @@ To transform JSX we need to import Babel.
 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 ```
 
-The code supplied here should not be used in production as converting JSX in the web browser is slow. Better to use [Create React App](http://create-react-app.dev/) which gives you an infrastructure to perform the transformation offline.
-
-The web application in our example should have a form with a `epsilon` and `guess` input field and a submit button.
 The form in JSX can be written in the following way:
 
 ```{.jsx #react-form}
@@ -996,20 +838,10 @@ The form in JSX can be written in the following way:
 </form>
 ```
 
-The form tag has a `onSubmit` property, which is set to a function (`handleSubmit`) that will handle the form submission.
-The input tag has a `value` property to set the variable (`epsilon` and `guess`) and it also has `onChange` property to set the function (`onEpsilonChange` and `onGuessChange`) which will be triggered when the user changes the value.
-
-Let's implement the `value` and `onChange` for the `epsilon` input.
-To store the value we will use the [React useState hook](https://reactjs.org/docs/hooks-state.html).
-
 ```{.js #react-state}
 // this JavaScript snippet is later referred to as <<react-state>>
 const [niter, setNiter] = React.useState(500000000);
 ```
-
-The argument of the `useState` function is the initial value. The `epsilon` variable contains the current value for epsilon and `setEpsilon` is a function to set epsilon to a new value.
-
-The input tag in the form will call the `onChange` function with a event object. We need to extract the user input from the event and pass it to `setEpsilon`. The value should be a number, so we use `Number()` to cast the string from the event to a number.
 
 ```{.js #react-state}
 // this JavaScript snippet is appended to <<react-state>>
@@ -1017,12 +849,6 @@ function onNiterChange(event) {
   setNiter(Number(event.target.value));
 }
 ```
-
-
-
-We are ready to implement the `handleSubmit` function which will process the form data.
-The function will get, similar to the onChange of the input tag, an event object.
-Normally when you submit a form the form fields will be send to the server, but we want to perform the calculation in the browser so we have to disable the default action with.
 
 ```{.jsx #handle-submit}
 // this JavaScript snippet is later referred to as <<handle-submit>>
@@ -1046,15 +872,10 @@ worker.postMessage({
 });
 ```
 
-We need a place to store the result of the calculation (`root` value), we will use `useState` function again.
-The initial value of the result is set to `undefined` as the result is only known after the calculation has been completed.
-
 ```{.js #react-state}
 // this JavaScript snippet is appended to <<react-state>>
 const [pi, setPi] = React.useState(undefined);
 ```
-
-When the worker is done it will send a message back to the app. The app needs to store the result value (`root`) using `setRoot`. The worker will then be terminated because it did its job.
 
 ```{.jsx #handle-submit}
 // this JavaScript snippet is appended to <<handle-submit>>
@@ -1067,10 +888,6 @@ worker.onmessage = function(message) {
 };
 ```
 
-To render the result we can use a React Component which has `root` as a property.
-When the calculation has not been done yet, it will render `Not submitted`.
-When the `root` property value is set then we will show it.
-
 ```{.jsx #result-component}
 // this JavaScript snippet is later referred to as <<result-component>>
 function Result(props) {
@@ -1082,8 +899,6 @@ function Result(props) {
   return <div id="answer">{message}</div>;
 }
 ```
-
-We can combine the heading, form and result components and all the states and handleSubmit function into the `App` React component.
 
 ```{.jsx file=src/js/app.js}
 <<heading-component>>
@@ -1107,8 +922,6 @@ function App() {
 }
 ```
 
-Finally we can render the `App` component to the HTML container with `container` as identifier.
-
 ```{.jsx file=src/js/app.js}
 // this JavaScript snippet appenended to src/js/app.js
 ReactDOM.render(
@@ -1129,11 +942,6 @@ Embedded below is the example app hosted on [GitHub pages](https://nlesc-jcer.gi
 <iframe width="100%" height="160" src="https://nlesc-jcer.github.io/cpp2wasm/src/js/example-app.html" /></iframe>
 
 ### JSON schema powered form
-
-The JSON schema can be used to generate a form. The form values will be validated against the schema.
-The most popular JSON schema form for React is [react-jsonschema-form](https://github.com/rjsf-team/react-jsonschema-form) so we will write a web application with it.
-
-In the [Web service](#web-service) an OpenAPI specification was used to specify the request and response schema. For the form we need the request schema in JSON format which is
 
 ```{.js #jsonschema-app}
 // this JavaScript snippet is later referred to as <<jsonschema-app>>
@@ -1282,10 +1090,6 @@ Embedded below is the example app hosted on [GitHub pages](https://nlesc-jcer.gi
 If you enter a negative number in the `epsilon` field the form will become invalid with a error message.
 
 ### Visualization
-
-The plots in web application can be made using [vega-lite](https://vega.github.io/vega-lite/). Vega-lite is a JS library which accepts a JSON document describing the plot.
-
-To make an interesting plot we need more than one result. We are going to do a parameter sweep and measure how long each calculation takes.
 
 Lets make a new JSON schema for the form in which we can set a max, min and step for epsilon.
 
