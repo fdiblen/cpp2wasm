@@ -231,7 +231,7 @@ To use pybind11, it must installed with pip
 pip install pybind11
 ```
 
-For example the bindings of `calculatepi.hpp:NewtonRaphson` class would look like:
+For example the bindings of `calculatepi.hpp:PiCalculate` class would look like:
 
 ```{.cpp file=src/py-calculatepi.cpp}
 // this C++ snippet is stored as src/py-calculatepi.cpp
@@ -299,7 +299,7 @@ The first page with the form and submit button is defined as a function returnin
 def form():
   return '''<!doctype html>
     <form method="POST">
-      <label for="niter">Iterations</label>
+      <label for="niter">Number of iterations</label>
       <input type="number" name="niter" value="500000000">
       <button type="submit">Submit</button>
     </form>'''
@@ -604,7 +604,7 @@ const pi = pifinder.calculate();
 ```
 
 ```{.js #render-answer}
-document.getElementById('answer').innerHTML = pi.toFixed(4);
+document.getElementById('answer').innerHTML = pi.toFixed(6);
 ```
 
 To run the JavaScript in a web browser a HTML page is needed.

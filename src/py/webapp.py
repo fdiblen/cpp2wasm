@@ -7,7 +7,7 @@ app = Flask(__name__)
 def form():
   return '''<!doctype html>
     <form method="POST">
-      <label for="niter">Iterations</label>
+      <label for="niter">Number of iterations</label>
       <input type="number" name="niter" value="500000000">
       <button type="submit">Submit</button>
     </form>'''
