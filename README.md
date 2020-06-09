@@ -178,7 +178,7 @@ Content-type: application/json
 
 {
   "niter": 500000000,
-  "root": 3.14154
+  "pi": 3.14154
 }
 ```
 
@@ -216,7 +216,7 @@ Should return the following JSON document as a response
 ```json
 {
   "niter": 500000000,
-  "root":3.14154
+  "pi":3.14154
 }
 ```
 
@@ -462,7 +462,6 @@ docker stop some-redis
 
 ### Web service
 
-The OpenAPI specification for performing root finding would look like
 
 ```{.yaml file=src/py/openapi.yaml}
 # this yaml snippet is stored as src/py/openapi.yaml
@@ -597,8 +596,6 @@ createModule().then((module) => {
 
 The `module` variable contains the `PiCalculate` class we defined in the binding above.
 
-The root finder can be called with.
-
 ```{.js #wasm-calculate}
 // this JavaScript snippet is later referred to as <<wasm-calculate>>
 const niter = 500000000;
@@ -606,10 +603,8 @@ const pifinder = new module.PiCalculate(niter);
 const pi = pifinder.calculate();
 ```
 
-Set the root answer to the HTML page using document manipulation functions: [getElementById](https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById), [innerHTML](https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML). In order to display the result, we use a HTML element with an id of `answer`. This element is defined in the HTML page which we will define soon.
-
 ```{.js #render-answer}
-document.getElementById('answer').innerHTML = root.toFixed(2);
+document.getElementById('answer').innerHTML = pi.toFixed(2);
 ```
 
 To run the JavaScript in a web browser a HTML page is needed.
@@ -691,8 +686,6 @@ if (message.data.type === 'CALCULATE') {
   });
 }
 ```
-
-Let's calculate the result (root) based on the payload parameters in the incoming message.
 
 ```{.js #perform-calc-in-worker}
 // this JavaScript snippet is before referred to as <<perform-calc-in-worker>>
@@ -805,7 +798,7 @@ ReactDOM.render(
 The `Heading` React component would render to the following HTML.
 
 ```html
-<h1>Root finding web application</h1>;
+<h1>PI calculation web application</h1>;
 ```
 
 The `<h1>{title}</h1>` looks like HTML, but is actually called [JSX](https://reactjs.org/docs/introducing-jsx.html).
@@ -936,7 +929,7 @@ Like before we also need to host the files in a web server with
 python3 -m http.server 8000
 ```
 
-Visit [http://localhost:8000/src/js/example-app.html](http://localhost:8000/src/js/example-app.html) to see the root answer.
+Visit [http://localhost:8000/src/js/example-app.html](http://localhost:8000/src/js/example-app.html) to see the pi answer.
 Embedded below is the example app hosted on [GitHub pages](https://nlesc-jcer.github.io/cpp2wasm/src/js/example-app.html)
 
 <iframe width="100%" height="160" src="https://nlesc-jcer.github.io/cpp2wasm/src/js/example-app.html" /></iframe>
@@ -1082,7 +1075,7 @@ Like before we also need to host the files in a web server with
 python3 -m http.server 8000
 ```
 
-Visit [http://localhost:8000/src/js/example-jsonschema-form.html](http://localhost:8000/src/js/example-jsonschema-form.html) to see the root answer.
+Visit [http://localhost:8000/src/js/example-jsonschema-form.html](http://localhost:8000/src/js/example-jsonschema-form.html) to see the pi answer.
 Embedded below is the example app hosted on [GitHub pages](https://nlesc-jcer.github.io/cpp2wasm/src/js/example-app.html)
 
 <iframe width="100%" height="320" src="https://nlesc-jcer.github.io/cpp2wasm/src/js/example-jsonschema-form.html" /></iframe>
@@ -1136,7 +1129,7 @@ The worker will recieve a payload like
 }
 ```
 
-The worker will send back an array containing objects with the root result, the input parameters and the duration in milliseconds.
+The worker will send back an array containing objects with the pi result, the input parameters and the duration in milliseconds.
 
 ```json
 [{
@@ -1177,8 +1170,6 @@ To measure the duration of a calculation we use the [performance.now()](https://
   const duration = performance.now() - t0;
 ```
 
-We append the root result object using [shorthand property names](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer) to the result array.
-
 ```{.js #calculate-sweep}
   // this JavaScript snippet appended to <<calculate-sweep>>
   pis.push({
@@ -1216,8 +1207,6 @@ onmessage = function(message) {
   }
 };
 ```
-
-To handle the submit we will start a worker, send the form data to the worker, recieve the workers result and store it in the `roots` variable.
 
 ```{.js #plot-app}
 // this JavaScript snippet is appended to <<plot-app>>

@@ -15,7 +15,7 @@
       worker.onmessage = function(message) {
         if (message.data.type === 'RESULT') {
           const pi = message.data.payload.pi;
-          document.getElementById('answer').innerHTML = root.toFixed(2);
+          document.getElementById('answer').innerHTML = pi.toFixed(2);
         }
       }
     </script>
