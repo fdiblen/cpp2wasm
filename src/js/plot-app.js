@@ -36,7 +36,7 @@ function Plot({pis}) {
 function App() {
   const Form = JSONSchemaForm.default;
   const uiSchema = {
-    "guess": {
+    "niter": {
       "ui:widget": "range"
     }
   }
